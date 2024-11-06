@@ -4,12 +4,26 @@ class Boid {
     this.velocity = p5.Vector.random2D();
     this.velocity.setMag(random(2, 4));
     this.acceleration = createVector();
-    this.maxForce = 1;
+    this.maxForce = 0.2;
+    this.maxSpeed = 4;
   }
 
   update() {
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
+  }
+
+  edges() {
+    if (this.position.x > width) {
+      this.position.x = 0;
+    } else if (this.position.x < 0) {
+      this.position.x = width;
+    }
+    if (this.position.y > height) {
+      this.position.y = 0;
+    } else if (this.position.y < 0) {
+      this.position.y = height;
+    }
   }
 
   align(boids) {
@@ -31,6 +45,7 @@ class Boid {
     }
     if (total > 0) {
       steering.div(total);
+      steering.setMag(this.maxSpeed);
       steering.sub(this.velocity); // steering force = desired velocity - current velocity
       steering.limit(this.maxForce);
     }
