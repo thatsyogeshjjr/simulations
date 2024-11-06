@@ -11,6 +11,7 @@ class Boid {
   update() {
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
+    // this.velocity.add(this.maxSpeed);
   }
 
   edges() {
@@ -29,7 +30,7 @@ class Boid {
   align(boids) {
     let steering = createVector();
     let total = 0;
-    let perception = 50;
+    let perception = 30;
     for (let other of boids) {
       let d = dist(
         this.position.x,
@@ -53,9 +54,41 @@ class Boid {
     return steering;
   }
 
+  cohesion(boids) {
+    // steering towards average position of local flocking
+    let steering = createVector();
+    let total = 0;
+    let perception = 50;
+    for (let other of boids) {
+      let d = dist(
+        this.position.x,
+        this.position.y,
+        other.position.x,
+        other.position.y
+      );
+
+      if (other != this && d < perception) {
+        steering.add(other.position);
+        total++;
+      }
+    }
+    if (total > 0) {
+      steering.div(total);
+
+      steering.sub(this.position);
+      steering.setMag(this.maxSpeed);
+      steering.sub(this.velocity); // steering force = desired velocity - current velocity
+      steering.limit(this.maxForce);
+    }
+
+    return steering;
+  }
+
   flock(boids) {
     let alignment = this.align(boids);
+    let cohesion = this.cohesion(boids);
     this.acceleration = alignment; //  acceleration = force / mass (a unit mass is assumed)
+    this.acceleration.add(cohesion);
   }
 
   show() {
